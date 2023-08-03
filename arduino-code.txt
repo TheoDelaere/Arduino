@@ -1,0 +1,115 @@
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+#include "HUSKYLENS.h"
+#include "SoftwareSerial.h"
+
+HUSKYLENS huskylens;
+SoftwareSerial mySerial(10, 11); // RX, TX
+//HUSKYLENS green line >> Pin 10; blue line >> Pin 11
+
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+byte  btn = 2;
+
+void clear(){
+  lcd.clear();
+}
+void printResult(HUSKYLENSResult result);
+
+void setup() {
+  // put your setup code here, to run once:
+
+  pinMode(btn, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(btn),clear,FALLING);
+  lcd.init();
+  lcd.backlight();
+  Serial.begin(115200);
+  mySerial.begin(9600);
+ 
+    while (!huskylens.begin(mySerial))
+    {
+        Serial.println(F("Begin failed!"));
+        Serial.println(F("1.Please recheck the \"Protocol Type\" in HUSKYLENS (General Settings>>Protocol Type>>Serial 9600)"));
+        Serial.println(F("2.Please recheck the connection."));
+        delay(100);
+    }
+ 
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+
+
+
+  if (!huskylens.request()) Serial.println(F("Fail to request data from HUSKYLENS, recheck the connection!"));
+    else if(!huskylens.isLearned()) Serial.println(F("Nothing learned, press learn button on HUSKYLENS to learn one!"));
+    else
+    {
+       
+        while (huskylens.available())
+        {
+            HUSKYLENSResult result = huskylens.read();
+            printResult(result);
+        }    
+       
+       
+    }
+
+ 
+  }
+
+
+void printResult(HUSKYLENSResult result){
+    if (result.command == COMMAND_RETURN_BLOCK){
+        switch(result.ID){
+
+          case 1:
+            lcd.clear();
+            lcd.print("Yellow");
+            Serial.println("Yellow");
+            delay(2000);
+            result.ID=0;
+            lcd.clear();
+            break;
+
+          case 2:
+            lcd.clear();
+            lcd.print("Blue");
+            Serial.println("Blue");
+            delay(2000);
+            result.ID=0;
+            lcd.clear();
+            break;
+
+          case 3:
+            lcd.clear();
+            lcd.print("Red");
+            Serial.println("Red");
+            delay(2000);
+            result.ID=0;
+            lcd.clear();
+            break;
+         
+          case 4:
+            lcd.clear();
+            lcd.print("Orange");
+            Serial.println("Orange");
+            delay(2000);
+            result.ID=0;
+            lcd.clear();
+            break;
+
+          case 5:
+            lcd.clear();
+            lcd.print("Green");
+            Serial.println("Green");
+            delay(2000);
+            result.ID=0;
+            lcd.clear();
+            break;
+
+        }
+
+
+    }
+
+}
